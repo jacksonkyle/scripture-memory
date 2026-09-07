@@ -53,13 +53,13 @@ export function ReviewPage() {
   if (queue.length === 0) {
     return (
       <div className="mx-auto max-w-2xl px-4 pb-24 pt-6 text-center sm:pb-8">
-        <h1 className="text-2xl font-bold text-slate-900">Nothing Due Right Now</h1>
-        <p className="mt-2 text-slate-600">
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Nothing Due Right Now</h1>
+        <p className="mt-2 text-slate-600 dark:text-slate-400">
           You're all caught up. Come back later, or add more Scripture to memorize.
         </p>
         <Link
           to="/"
-          className="mt-6 inline-block rounded-xl bg-blue-700 px-6 py-3 font-semibold text-white hover:bg-blue-800"
+          className="mt-6 inline-block rounded-xl bg-blue-700 px-6 py-3 font-semibold text-white hover:bg-blue-800 dark:bg-blue-600 dark:hover:bg-blue-500"
         >
           Back to Today
         </Link>
@@ -70,14 +70,14 @@ export function ReviewPage() {
   if (position >= queue.length) {
     return (
       <div className="mx-auto max-w-2xl px-4 pb-24 pt-6 text-center sm:pb-8">
-        <h1 className="text-2xl font-bold text-slate-900">Session Complete</h1>
-        <p className="mt-2 text-slate-600">
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Session Complete</h1>
+        <p className="mt-2 text-slate-600 dark:text-slate-400">
           You reviewed {sessionCount} {sessionCount === 1 ? "Scripture" : "Scriptures"}. Well
           done.
         </p>
         <Link
           to="/"
-          className="mt-6 inline-block rounded-xl bg-blue-700 px-6 py-3 font-semibold text-white hover:bg-blue-800"
+          className="mt-6 inline-block rounded-xl bg-blue-700 px-6 py-3 font-semibold text-white hover:bg-blue-800 dark:bg-blue-600 dark:hover:bg-blue-500"
         >
           Back to Today
         </Link>
@@ -91,7 +91,7 @@ export function ReviewPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 pb-24 pt-6 sm:pb-8">
-      <div className="mb-4 flex items-center justify-between text-sm text-slate-500">
+      <div className="mb-4 flex items-center justify-between text-sm text-slate-500 dark:text-slate-400">
         <span>
           {position + 1} of {queue.length}
         </span>

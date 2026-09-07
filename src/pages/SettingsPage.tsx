@@ -79,11 +79,11 @@ export function SettingsPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 pb-24 pt-6 sm:pb-8">
-      <h1 className="text-2xl font-bold text-slate-900">Settings</h1>
+      <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Settings</h1>
 
       <section className="mt-6">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Preferences</h2>
-        <div className="mt-3 space-y-4 rounded-xl border border-slate-200 bg-white p-4">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Preferences</h2>
+        <div className="mt-3 space-y-4 rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
           <Field label="Preferred Translation">
             <select
               value={settings.preferredTranslation ?? ""}
@@ -123,11 +123,11 @@ export function SettingsPage() {
             />
           </Field>
 
-          <label className="flex items-center justify-between text-sm text-slate-700">
+          <label className="flex items-center justify-between text-sm text-slate-700 dark:text-slate-300">
             <span>
               Speech Recognition
               {!isSpeechRecognitionSupported() && (
-                <span className="ml-1 text-xs text-slate-400">(not supported here)</span>
+                <span className="ml-1 text-xs text-slate-400 dark:text-slate-500">(not supported here)</span>
               )}
             </span>
             <input
@@ -156,24 +156,24 @@ export function SettingsPage() {
       </section>
 
       <section className="mt-8">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Data & Backup</h2>
-        <p className="mt-2 text-sm text-slate-500">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Data & Backup</h2>
+        <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
           Your Scripture library, memorization progress, review history, and notes are stored
           locally in your browser. They are not uploaded to a server.
         </p>
 
-        <div className="mt-3 space-y-3 rounded-xl border border-slate-200 bg-white p-4">
+        <div className="mt-3 space-y-3 rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
           <button
             type="button"
             onClick={() => downloadBackup()}
-            className="w-full rounded-lg bg-blue-700 px-4 py-2 font-semibold text-white hover:bg-blue-800"
+            className="w-full rounded-lg bg-blue-700 px-4 py-2 font-semibold text-white hover:bg-blue-800 dark:bg-blue-600 dark:hover:bg-blue-500"
           >
             Download Backup
           </button>
           <button
             type="button"
             onClick={() => downloadScriptureOnlyExport()}
-            className="w-full rounded-lg bg-slate-100 px-4 py-2 font-semibold text-slate-700 hover:bg-slate-200"
+            className="w-full rounded-lg bg-slate-100 px-4 py-2 font-semibold text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
           >
             Export Scripture Only
           </button>
@@ -181,7 +181,7 @@ export function SettingsPage() {
           <div>
             <label
               htmlFor="restore-file"
-              className="block w-full cursor-pointer rounded-lg border border-dashed border-slate-300 px-4 py-3 text-center text-sm font-medium text-slate-600 hover:border-blue-400"
+              className="block w-full cursor-pointer rounded-lg border border-dashed border-slate-300 px-4 py-3 text-center text-sm font-medium text-slate-600 hover:border-blue-400 dark:border-slate-700 dark:text-slate-400 dark:hover:border-blue-500"
             >
               Choose Backup File to Restore…
             </label>
@@ -198,21 +198,21 @@ export function SettingsPage() {
           <button
             type="button"
             onClick={handleReset}
-            className="w-full rounded-lg bg-red-50 px-4 py-2 font-semibold text-red-700 hover:bg-red-100"
+            className="w-full rounded-lg bg-red-50 px-4 py-2 font-semibold text-red-700 hover:bg-red-100 dark:bg-red-950/40 dark:text-red-400 dark:hover:bg-red-950/60"
           >
             Reset Local Data
           </button>
         </div>
 
-        {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
-        {statusMessage && <p className="mt-3 text-sm text-emerald-700">{statusMessage}</p>}
+        {error && <p className="mt-3 text-sm text-red-600 dark:text-red-400">{error}</p>}
+        {statusMessage && <p className="mt-3 text-sm text-emerald-700 dark:text-emerald-400">{statusMessage}</p>}
       </section>
 
       {preview && (
         <div className="fixed inset-0 z-30 flex items-end justify-center bg-black/40 sm:items-center">
-          <div className="w-full max-w-md rounded-t-2xl bg-white p-6 sm:rounded-2xl">
-            <h3 className="text-lg font-bold text-slate-900">Restore Backup</h3>
-            <dl className="mt-3 space-y-1 text-sm text-slate-600">
+          <div className="w-full max-w-md rounded-t-2xl bg-white p-6 sm:rounded-2xl dark:bg-slate-900">
+            <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">Restore Backup</h3>
+            <dl className="mt-3 space-y-1 text-sm text-slate-600 dark:text-slate-400">
               <Row label="Backup Date" value={formatFullDate(preview.exportedAt)} />
               <Row label="Scriptures" value={String(preview.scriptureCount)} />
               <Row label="Collections" value={String(preview.collectionCount)} />
@@ -225,7 +225,7 @@ export function SettingsPage() {
                 type="button"
                 disabled={busy}
                 onClick={() => handleRestore("replace")}
-                className="w-full rounded-lg bg-red-600 px-4 py-2 font-semibold text-white hover:bg-red-700 disabled:opacity-60"
+                className="w-full rounded-lg bg-red-600 px-4 py-2 font-semibold text-white hover:bg-red-700 disabled:opacity-60 dark:bg-red-700 dark:hover:bg-red-600"
               >
                 Replace Existing Data
               </button>
@@ -233,7 +233,7 @@ export function SettingsPage() {
                 type="button"
                 disabled={busy}
                 onClick={() => handleRestore("merge")}
-                className="w-full rounded-lg bg-blue-700 px-4 py-2 font-semibold text-white hover:bg-blue-800 disabled:opacity-60"
+                className="w-full rounded-lg bg-blue-700 px-4 py-2 font-semibold text-white hover:bg-blue-800 disabled:opacity-60 dark:bg-blue-600 dark:hover:bg-blue-500"
               >
                 Merge With Existing Data
               </button>
@@ -244,7 +244,7 @@ export function SettingsPage() {
                   setPendingBackup(null);
                   setPreview(null);
                 }}
-                className="w-full rounded-lg bg-slate-100 px-4 py-2 font-semibold text-slate-700 hover:bg-slate-200"
+                className="w-full rounded-lg bg-slate-100 px-4 py-2 font-semibold text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
               >
                 Cancel
               </button>
@@ -259,7 +259,7 @@ export function SettingsPage() {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <label className="mb-1 block text-sm font-medium text-slate-700">{label}</label>
+      <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{label}</label>
       {children}
     </div>
   );
@@ -269,7 +269,7 @@ function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex justify-between">
       <dt>{label}</dt>
-      <dd className="font-medium text-slate-800">{value}</dd>
+      <dd className="font-medium text-slate-800 dark:text-slate-200">{value}</dd>
     </div>
   );
 }

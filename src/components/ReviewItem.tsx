@@ -102,27 +102,27 @@ export function ReviewItem({ scripture, progress, speechEnabled, onComplete }: R
   }
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-      <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
+    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+      <p className="text-xs font-medium uppercase tracking-wide text-slate-400 dark:text-slate-500">
         {scripture.reference}
       </p>
 
       {phase === "read" && (
         <>
-          <p className="mt-3 whitespace-pre-wrap text-xl leading-relaxed text-slate-800">
+          <p className="mt-3 whitespace-pre-wrap text-xl leading-relaxed text-slate-800 dark:text-slate-200">
             {scripture.text}
           </p>
-          <p className="mt-2 text-sm text-slate-500">Read it a few times, then begin.</p>
+          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Read it a few times, then begin.</p>
           <ActionButton onClick={goToNextPhase}>Begin Memorizing</ActionButton>
         </>
       )}
 
       {hiddenText !== null && (
         <>
-          <p className="mt-3 whitespace-pre-wrap text-xl leading-relaxed text-slate-800">
+          <p className="mt-3 whitespace-pre-wrap text-xl leading-relaxed text-slate-800 dark:text-slate-200">
             {hiddenText}
           </p>
-          <p className="mt-2 text-sm text-slate-500">
+          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
             Fill in the blanks from memory, then continue.
           </p>
           <ActionButton onClick={goToNextPhase}>Continue</ActionButton>
@@ -131,10 +131,10 @@ export function ReviewItem({ scripture, progress, speechEnabled, onComplete }: R
 
       {hintedText !== null && (
         <>
-          <p className="mt-3 whitespace-pre-wrap text-xl leading-relaxed tracking-wide text-slate-800">
+          <p className="mt-3 whitespace-pre-wrap text-xl leading-relaxed tracking-wide text-slate-800 dark:text-slate-200">
             {hintedText}
           </p>
-          <p className="mt-2 text-sm text-slate-500">
+          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
             Use the first letters as a guide and recite the whole verse.
           </p>
           <ActionButton onClick={goToNextPhase}>Continue</ActionButton>
@@ -143,8 +143,8 @@ export function ReviewItem({ scripture, progress, speechEnabled, onComplete }: R
 
       {phase === "reference" && (
         <>
-          <p className="mt-3 text-2xl font-semibold text-slate-800">{scripture.reference}</p>
-          <p className="mt-2 text-sm text-slate-500">
+          <p className="mt-3 text-2xl font-semibold text-slate-800 dark:text-slate-200">{scripture.reference}</p>
+          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
             Recall the entire Scripture without hints, then continue.
           </p>
           <ActionButton onClick={goToNextPhase}>I've Recalled It</ActionButton>
@@ -153,7 +153,7 @@ export function ReviewItem({ scripture, progress, speechEnabled, onComplete }: R
 
       {phase === "typing" && (
         <>
-          <p className="mt-1 text-sm text-slate-500">Type the verse from memory:</p>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Type the verse from memory:</p>
           <textarea
             value={typedAnswer}
             onChange={(e) => {
@@ -173,7 +173,7 @@ export function ReviewItem({ scripture, progress, speechEnabled, onComplete }: R
                 type="button"
                 onClick={handleRecite}
                 disabled={listening}
-                className="rounded-xl bg-slate-100 px-4 py-3 font-semibold text-slate-700 hover:bg-slate-200 disabled:opacity-60"
+                className="rounded-xl bg-slate-100 px-4 py-3 font-semibold text-slate-700 hover:bg-slate-200 disabled:opacity-60 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
               >
                 {listening ? "Listening…" : "Recite Aloud"}
               </button>
@@ -184,32 +184,32 @@ export function ReviewItem({ scripture, progress, speechEnabled, onComplete }: R
 
       {phase === "graded" && compareResult && (
         <div className="mt-3">
-          <p className="text-3xl font-bold text-slate-900">{compareResult.score}%</p>
-          <p className="text-sm font-medium text-slate-500">{scoreCategory(compareResult.score)}</p>
+          <p className="text-3xl font-bold text-slate-900 dark:text-slate-100">{compareResult.score}%</p>
+          <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{scoreCategory(compareResult.score)}</p>
           <div className="mt-3 space-y-1 text-sm">
             {compareResult.missingWords.length > 0 && (
-              <p className="text-red-700">
+              <p className="text-red-700 dark:text-red-400">
                 Missing: {compareResult.missingWords.join(", ")}
               </p>
             )}
             {compareResult.incorrectWords.length > 0 && (
-              <p className="text-amber-700">
+              <p className="text-amber-700 dark:text-amber-400">
                 Incorrect: {compareResult.incorrectWords.join(", ")}
               </p>
             )}
             {compareResult.extraWords.length > 0 && (
-              <p className="text-slate-500">Extra: {compareResult.extraWords.join(", ")}</p>
+              <p className="text-slate-500 dark:text-slate-400">Extra: {compareResult.extraWords.join(", ")}</p>
             )}
             {compareResult.missingWords.length === 0 &&
               compareResult.incorrectWords.length === 0 &&
               compareResult.extraWords.length === 0 && (
-                <p className="text-emerald-700">Perfect recall!</p>
+                <p className="text-emerald-700 dark:text-emerald-400">Perfect recall!</p>
               )}
           </div>
           <div className="mt-4">
             <ReviewControls onRate={handleRate} />
           </div>
-          <p className="mt-2 text-center text-xs text-slate-400">
+          <p className="mt-2 text-center text-xs text-slate-400 dark:text-slate-500">
             Suggested: {ratingFromScore(compareResult.score)} — you can override above.
           </p>
         </div>
@@ -232,7 +232,7 @@ function ActionButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="mt-4 w-full rounded-xl bg-blue-700 px-4 py-3 font-semibold text-white hover:bg-blue-800 disabled:opacity-50"
+      className="mt-4 w-full rounded-xl bg-blue-700 px-4 py-3 font-semibold text-white hover:bg-blue-800 disabled:opacity-50 dark:bg-blue-600 dark:hover:bg-blue-500"
     >
       {children}
     </button>

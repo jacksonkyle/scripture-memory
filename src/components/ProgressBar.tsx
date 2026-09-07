@@ -10,7 +10,7 @@ export function ProgressBar({ value, max = 100, label, colorClassName }: Progres
   return (
     <div className="w-full">
       {label && (
-        <div className="mb-1 flex justify-between text-xs text-slate-600">
+        <div className="mb-1 flex justify-between text-xs text-slate-600 dark:text-slate-400">
           <span>{label}</span>
           <span>{Math.round(percentage)}%</span>
         </div>
@@ -21,10 +21,10 @@ export function ProgressBar({ value, max = 100, label, colorClassName }: Progres
         aria-valuemin={0}
         aria-valuemax={100}
         aria-label={label}
-        className="h-2 w-full overflow-hidden rounded-full bg-slate-200"
+        className="h-2 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800"
       >
         <div
-          className={`h-full rounded-full transition-all ${colorClassName ?? "bg-blue-600"}`}
+          className={`h-full rounded-full transition-all ${colorClassName ?? "bg-blue-600 dark:bg-blue-500"}`}
           style={{ width: `${percentage}%` }}
         />
       </div>

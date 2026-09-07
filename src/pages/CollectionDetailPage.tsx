@@ -19,8 +19,8 @@ export function CollectionDetailPage() {
   if (!collection) {
     return (
       <div className="mx-auto max-w-2xl px-4 pt-6">
-        <p className="text-slate-600">This collection could not be found.</p>
-        <Link to="/collections" className="text-blue-700 underline">
+        <p className="text-slate-600 dark:text-slate-400">This collection could not be found.</p>
+        <Link to="/collections" className="text-blue-700 underline dark:text-blue-400">
           Back to Collections
         </Link>
       </div>
@@ -53,13 +53,13 @@ export function CollectionDetailPage() {
             className="input"
             autoFocus
           />
-          <button type="submit" className="rounded-lg bg-blue-700 px-3 py-2 text-sm text-white">
+          <button type="submit" className="rounded-lg bg-blue-700 px-3 py-2 text-sm text-white dark:bg-blue-600">
             Save
           </button>
         </form>
       ) : (
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-slate-900">{collection.name}</h1>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">{collection.name}</h1>
           <div className="flex gap-2">
             <button
               type="button"
@@ -67,21 +67,21 @@ export function CollectionDetailPage() {
                 setName(collection.name);
                 setIsEditing(true);
               }}
-              className="rounded-lg bg-slate-100 px-3 py-1 text-sm text-slate-700 hover:bg-slate-200"
+              className="rounded-lg bg-slate-100 px-3 py-1 text-sm text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
             >
               Rename
             </button>
             <button
               type="button"
               onClick={handleDelete}
-              className="rounded-lg bg-red-50 px-3 py-1 text-sm text-red-700 hover:bg-red-100"
+              className="rounded-lg bg-red-50 px-3 py-1 text-sm text-red-700 hover:bg-red-100 dark:bg-red-950/40 dark:text-red-400 dark:hover:bg-red-950/60"
             >
               Delete
             </button>
           </div>
         </div>
       )}
-      {collection.description && <p className="mt-1 text-slate-500">{collection.description}</p>}
+      {collection.description && <p className="mt-1 text-slate-500 dark:text-slate-400">{collection.description}</p>}
 
       <ul className="mt-6 space-y-3">
         {items.map((s) => (
@@ -95,9 +95,9 @@ export function CollectionDetailPage() {
       </ul>
 
       {items.length === 0 && (
-        <p className="mt-8 text-center text-slate-500">
+        <p className="mt-8 text-center text-slate-500 dark:text-slate-400">
           No Scriptures in this collection yet.{" "}
-          <Link to="/library/new" className="text-blue-700 underline">
+          <Link to="/library/new" className="text-blue-700 underline dark:text-blue-400">
             Add one
           </Link>
           .

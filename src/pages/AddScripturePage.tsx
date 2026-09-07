@@ -85,7 +85,7 @@ export function AddScripturePage() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 pb-24 pt-6 sm:pb-8">
-      <h1 className="text-2xl font-bold text-slate-900">
+      <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
         {isEditing ? "Edit Scripture" : "Add Scripture"}
       </h1>
 
@@ -148,7 +148,7 @@ export function AddScripturePage() {
         </Field>
 
         <fieldset>
-          <legend className="mb-2 block text-sm font-medium text-slate-700">Collections</legend>
+          <legend className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">Collections</legend>
           <div className="flex flex-wrap gap-2">
             {collections.map((c) => (
               <button
@@ -157,8 +157,8 @@ export function AddScripturePage() {
                 onClick={() => toggleCollection(c.id)}
                 className={`rounded-full px-3 py-1 text-sm transition-colors ${
                   selectedCollectionIds.includes(c.id)
-                    ? "bg-blue-700 text-white"
-                    : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                    ? "bg-blue-700 text-white dark:bg-blue-600"
+                    : "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
                 }`}
               >
                 {c.name}
@@ -175,19 +175,19 @@ export function AddScripturePage() {
             <button
               type="button"
               onClick={handleAddCollection}
-              className="rounded-lg bg-slate-100 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-200"
+              className="rounded-lg bg-slate-100 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
             >
               Add
             </button>
           </div>
         </fieldset>
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
 
         <button
           type="submit"
           disabled={submitting}
-          className="w-full rounded-xl bg-blue-700 py-3 text-lg font-semibold text-white hover:bg-blue-800 disabled:opacity-60"
+          className="w-full rounded-xl bg-blue-700 py-3 text-lg font-semibold text-white hover:bg-blue-800 disabled:opacity-60 dark:bg-blue-600 dark:hover:bg-blue-500"
         >
           {isEditing ? "Save Changes" : "Save Scripture"}
         </button>
@@ -207,7 +207,7 @@ function Field({
 }) {
   return (
     <div>
-      <label htmlFor={htmlFor} className="mb-1 block text-sm font-medium text-slate-700">
+      <label htmlFor={htmlFor} className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">
         {label}
       </label>
       {children}

@@ -42,20 +42,20 @@ export function TodayPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 pb-24 pt-6 sm:pb-8">
-      <h1 className="text-2xl font-bold text-slate-900">{greeting()}</h1>
-      <p className="mt-1 text-slate-600">Today's Scripture Review</p>
+      <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">{greeting()}</h1>
+      <p className="mt-1 text-slate-600 dark:text-slate-400">Today's Scripture Review</p>
 
       <dl className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <StatTile label="Due Today" value={dueToday} accent="text-blue-700" />
-        <StatTile label="Learning" value={counts.learning} accent="text-amber-700" />
-        <StatTile label="New" value={counts.new} accent="text-slate-700" />
-        <StatTile label="Mastered" value={counts.mastered} accent="text-emerald-700" />
+        <StatTile label="Due Today" value={dueToday} accent="text-blue-700 dark:text-blue-400" />
+        <StatTile label="Learning" value={counts.learning} accent="text-amber-700 dark:text-amber-400" />
+        <StatTile label="New" value={counts.new} accent="text-slate-700 dark:text-slate-300" />
+        <StatTile label="Mastered" value={counts.mastered} accent="text-emerald-700 dark:text-emerald-400" />
       </dl>
 
       <Link
         to="/review"
         className={`mt-6 block rounded-xl px-6 py-4 text-center text-lg font-semibold text-white shadow-sm transition-colors ${
-          hasWork ? "bg-blue-700 hover:bg-blue-800" : "bg-slate-300"
+          hasWork ? "bg-blue-700 hover:bg-blue-800 dark:bg-blue-600 dark:hover:bg-blue-500" : "bg-slate-300 dark:bg-slate-700"
         }`}
         aria-disabled={!hasWork}
         onClick={(e) => {
@@ -73,14 +73,14 @@ export function TodayPage() {
 
       {recentlyMastered.length > 0 && (
         <section className="mt-8">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
             Recently Mastered
           </h2>
           <ul className="mt-2 space-y-2">
             {recentlyMastered.map((s) => (
               <li
                 key={s.id}
-                className="rounded-lg border border-emerald-100 bg-emerald-50 px-4 py-2 text-sm text-emerald-900"
+                className="rounded-lg border border-emerald-100 bg-emerald-50 px-4 py-2 text-sm text-emerald-900 dark:border-emerald-900/40 dark:bg-emerald-950/30 dark:text-emerald-300"
               >
                 {s.reference}
               </li>
@@ -90,20 +90,20 @@ export function TodayPage() {
       )}
 
       {scriptures.length === 0 && (
-        <div className="mt-10 rounded-xl border border-dashed border-slate-300 p-6 text-center">
-          <p className="text-slate-600">
+        <div className="mt-10 rounded-xl border border-dashed border-slate-300 p-6 text-center dark:border-slate-700">
+          <p className="text-slate-600 dark:text-slate-400">
             You haven't added any Scripture yet. Start building your library.
           </p>
           <Link
             to="/library/new"
-            className="mt-3 inline-block rounded-lg bg-blue-700 px-4 py-2 text-white hover:bg-blue-800"
+            className="mt-3 inline-block rounded-lg bg-blue-700 px-4 py-2 text-white hover:bg-blue-800 dark:bg-blue-600 dark:hover:bg-blue-500"
           >
             Add Your First Scripture
           </Link>
         </div>
       )}
 
-      <p className="mt-2 text-xs text-slate-400">
+      <p className="mt-2 text-xs text-slate-400 dark:text-slate-500">
         {dueToday > 0 && `Next review window: ${formatRelativeDate(new Date().toISOString())}`}
       </p>
     </div>
@@ -112,8 +112,8 @@ export function TodayPage() {
 
 function StatTile({ label, value, accent }: { label: string; value: number; accent: string }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-4 text-center shadow-sm">
-      <dt className="text-xs font-medium uppercase tracking-wide text-slate-500">{label}</dt>
+    <div className="rounded-xl border border-slate-200 bg-white p-4 text-center shadow-sm dark:border-slate-800 dark:bg-slate-900">
+      <dt className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">{label}</dt>
       <dd className={`mt-1 text-2xl font-bold ${accent}`}>{value}</dd>
     </div>
   );
@@ -121,9 +121,9 @@ function StatTile({ label, value, accent }: { label: string; value: number; acce
 
 function InfoCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl bg-slate-50 p-4 text-center">
-      <p className="text-xs uppercase tracking-wide text-slate-500">{label}</p>
-      <p className="mt-1 text-lg font-semibold text-slate-800">{value}</p>
+    <div className="rounded-xl bg-slate-50 p-4 text-center dark:bg-slate-900">
+      <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">{label}</p>
+      <p className="mt-1 text-lg font-semibold text-slate-800 dark:text-slate-200">{value}</p>
     </div>
   );
 }

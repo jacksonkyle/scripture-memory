@@ -20,20 +20,20 @@ export function ProgressPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 pb-24 pt-6 sm:pb-8">
-      <h1 className="text-2xl font-bold text-slate-900">Scripture Progress</h1>
+      <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Scripture Progress</h1>
 
       <dl className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
         <Stat label="Total Scriptures" value={scriptures.length} />
-        <Stat label="Mastered" value={counts.mastered} accent="text-emerald-700" />
-        <Stat label="Learning" value={counts.learning} accent="text-amber-700" />
-        <Stat label="Reviewing" value={counts.reviewing} accent="text-blue-700" />
+        <Stat label="Mastered" value={counts.mastered} accent="text-emerald-700 dark:text-emerald-400" />
+        <Stat label="Learning" value={counts.learning} accent="text-amber-700 dark:text-amber-400" />
+        <Stat label="Reviewing" value={counts.reviewing} accent="text-blue-700 dark:text-blue-400" />
         <Stat label="Reviews This Week" value={weeklyReviews} />
         <Stat label="Average Recall" value={`${avgRecall}%`} />
         <Stat label="Current Streak" value={`${streak}d`} />
       </dl>
 
       <section className="mt-8">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
           Upcoming Review Load
         </h2>
         <div className="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -57,9 +57,9 @@ function Stat({
   accent?: string;
 }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-4 text-center shadow-sm">
-      <dt className="text-xs font-medium uppercase tracking-wide text-slate-500">{label}</dt>
-      <dd className={`mt-1 text-xl font-bold ${accent ?? "text-slate-800"}`}>{value}</dd>
+    <div className="rounded-xl border border-slate-200 bg-white p-4 text-center shadow-sm dark:border-slate-800 dark:bg-slate-900">
+      <dt className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">{label}</dt>
+      <dd className={`mt-1 text-xl font-bold ${accent ?? "text-slate-800 dark:text-slate-200"}`}>{value}</dd>
     </div>
   );
 }
