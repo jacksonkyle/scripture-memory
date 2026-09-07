@@ -214,6 +214,9 @@ export function AddScripturePage() {
         </Field>
 
         <div className="rounded-lg border border-dashed border-slate-300 p-3 dark:border-slate-700">
+          <p className="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+            Free lookup ({LOOKUP_TRANSLATIONS.join("/")}, no key needed)
+          </p>
           <button
             type="button"
             onClick={handleLookup}
@@ -225,7 +228,7 @@ export function AddScripturePage() {
           <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
             {isLookupTranslation(translation)
               ? `Pulls the verse text automatically for ${translation} from a public-domain Bible API. Requires an internet connection.`
-              : `Automatic lookup only works for public-domain translations (${LOOKUP_TRANSLATIONS.join(" or ")}) due to copyright. Switch translation above to use it, or type the text below.`}
+              : `This free lookup only supports public-domain translations (${LOOKUP_TRANSLATIONS.join(" or ")}) due to copyright. Switch translation above to use it here, type the text below, or use the api.bible lookup below if your key has access to ${translation}.`}
           </p>
           {lookupError && <p className="mt-2 text-sm text-red-600 dark:text-red-400">{lookupError}</p>}
           {lookupSuccess && (
