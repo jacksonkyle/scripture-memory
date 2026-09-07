@@ -73,6 +73,18 @@ fully offline. The lookup client (`src/services/bibleProvider.ts`) is written
 behind a small `BibleProvider` interface so a licensed provider can be added
 later without changing any callers.
 
+### Optional: your own api.bible key
+
+If you have an [api.bible](https://scripture.api.bible) key, paste it into
+**Settings → Scripture Lookup**. It unlocks a second lookup panel on the Add
+Scripture form listing whatever translations your key is authorized for —
+which may include licensed translations beyond KJV/WEB, depending on your
+account. The key is stored only in your browser's local database; it is
+never committed to this repo, bundled into the built app, or sent anywhere
+except directly to api.bible from your own device. Because this app has no
+backend, there is no way to keep a shared key secret from users of a public
+deployment — each person who wants this feature supplies their own key.
+
 ## How memorization works
 
 Each Scripture progresses through five stages the first time you learn it:

@@ -1,17 +1,25 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { TRANSLATIONS } from "../models";
-import { useCollections, useScripture } from "../hooks/useLiveData";
+import { useCollections, useScripture, useSettings } from "../hooks/useLiveData";
 import { addScripture, updateScripture } from "../db/repositories/scriptureRepository";
 import { addCollection } from "../db/repositories/collectionRepository";
 import { parseReference } from "../utils/reference";
-import { bibleProvider, isLookupTranslation, LOOKUP_TRANSLATIONS } from "../services/bibleProvider";
+import {
+  ApiBibleProvider,
+  bibleProvider,
+  isLookupTranslation,
+  listApiBibles,
+  LOOKUP_TRANSLATIONS,
+  type ApiBibleSummary,
+} from "../services/bibleProvider";
 
 export function AddScripturePage() {
   const { id } = useParams<{ id: string }>();
   const isEditing = Boolean(id);
   const existing = useScripture(id);
   const collections = useCollections();
+  const settings = useSettings();
   const navigate = useNavigate();
 
   const [reference, setReference] = useState("");
@@ -26,6 +34,43 @@ export function AddScripturePage() {
   const [lookupLoading, setLookupLoading] = useState(false);
   const [lookupError, setLookupError] = useState<string | null>(null);
   const [lookupSuccess, setLookupSuccess] = useState(false);
+
+  const [apiBibles, setApiBibles] = useState<ApiBibleSummary[]>([]);
+  const [apiBiblesLoading, setApiBiblesLoading] = useState(false);
+  const [apiBiblesError, setApiBiblesError] = useState<string | null>(null);
+  const [selectedApiBibleId, setSelectedApiBibleId] = useState<string>("");
+  const [apiLookupLoading, setApiLookupLoading] = useState(false);
+  const [apiLookupError, setApiLookupError] = useState<string | null>(null);
+  const [apiLookupCopyright, setApiLookupCopyright] = useState<string | null>(null);
+
+  const apiBibleKey = settings.apiBibleKey?.trim();
+
+  useEffect(() => {
+    if (!apiBibleKey) {
+      setApiBibles([]);
+      setSelectedApiBibleId("");
+      return;
+    }
+    let cancelled = false;
+    setApiBiblesLoading(true);
+    setApiBiblesError(null);
+    listApiBibles(apiBibleKey)
+      .then((bibles) => {
+        if (cancelled) return;
+        setApiBibles(bibles);
+        setSelectedApiBibleId((current) => current || bibles[0]?.id || "");
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        setApiBiblesError(err instanceof Error ? err.message : "Couldn't load translations.");
+      })
+      .finally(() => {
+        if (!cancelled) setApiBiblesLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [apiBibleKey]);
 
   useEffect(() => {
     if (existing) {
@@ -88,6 +133,26 @@ export function AddScripturePage() {
     }
   }
 
+  async function handleApiLookup() {
+    if (!apiBibleKey || !selectedApiBibleId) return;
+    setApiLookupLoading(true);
+    setApiLookupError(null);
+    setApiLookupCopyright(null);
+    try {
+      const provider = new ApiBibleProvider(apiBibleKey);
+      const result = await provider.getPassage(selectedApiBibleId, reference);
+      setReference(result.reference);
+      setText(result.text);
+      const chosenBible = apiBibles.find((b) => b.id === selectedApiBibleId);
+      if (chosenBible) setTranslation(chosenBible.abbreviation);
+      if (result.copyright) setApiLookupCopyright(result.copyright);
+    } catch (err) {
+      setApiLookupError(err instanceof Error ? err.message : "Lookup failed. Please try again.");
+    } finally {
+      setApiLookupLoading(false);
+    }
+  }
+
   async function handleAddCollection() {
     const name = newCollectionName.trim();
     if (!name) return;
@@ -137,6 +202,9 @@ export function AddScripturePage() {
             }}
             className="input"
           >
+            {!(TRANSLATIONS as readonly string[]).includes(translation) && translation && (
+              <option value={translation}>{translation}</option>
+            )}
             {TRANSLATIONS.map((t) => (
               <option key={t} value={t}>
                 {t}
@@ -166,6 +234,51 @@ export function AddScripturePage() {
             </p>
           )}
         </div>
+
+        {apiBibleKey && (
+          <div className="rounded-lg border border-dashed border-slate-300 p-3 dark:border-slate-700">
+            <p className="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+              Look up via your api.bible key
+            </p>
+            {apiBiblesLoading && (
+              <p className="text-xs text-slate-500 dark:text-slate-400">Loading available translations…</p>
+            )}
+            {apiBiblesError && (
+              <p className="text-sm text-red-600 dark:text-red-400">{apiBiblesError}</p>
+            )}
+            {!apiBiblesLoading && !apiBiblesError && apiBibles.length > 0 && (
+              <>
+                <select
+                  value={selectedApiBibleId}
+                  onChange={(e) => setSelectedApiBibleId(e.target.value)}
+                  className="input"
+                >
+                  {apiBibles.map((b) => (
+                    <option key={b.id} value={b.id}>
+                      {b.name} ({b.abbreviation})
+                    </option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  onClick={handleApiLookup}
+                  disabled={!reference.trim() || apiLookupLoading}
+                  className="mt-2 w-full rounded-lg bg-slate-800 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white"
+                >
+                  {apiLookupLoading ? "Looking up…" : "Look Up & Fill Text"}
+                </button>
+                {apiLookupError && (
+                  <p className="mt-2 text-sm text-red-600 dark:text-red-400">{apiLookupError}</p>
+                )}
+                {apiLookupCopyright && (
+                  <p className="mt-2 text-xs italic text-slate-500 dark:text-slate-400">
+                    {apiLookupCopyright}
+                  </p>
+                )}
+              </>
+            )}
+          </div>
+        )}
 
         <Field label="Scripture Text" htmlFor="text">
           <textarea

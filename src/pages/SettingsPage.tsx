@@ -16,6 +16,7 @@ import type { Backup, RestorePreview } from "../models";
 import { TRANSLATIONS } from "../models";
 import { formatFullDate } from "../utils/date";
 import { isSpeechRecognitionSupported } from "../services/speechService";
+import { listApiBibles } from "../services/bibleProvider";
 
 export function SettingsPage() {
   const settings = useSettings();
@@ -25,6 +26,22 @@ export function SettingsPage() {
   const [error, setError] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [showApiKey, setShowApiKey] = useState(false);
+  const [keyTestStatus, setKeyTestStatus] = useState<"idle" | "testing" | "success" | "error">("idle");
+  const [keyTestMessage, setKeyTestMessage] = useState<string | null>(null);
+
+  async function handleTestApiBibleKey() {
+    setKeyTestStatus("testing");
+    setKeyTestMessage(null);
+    try {
+      const bibles = await listApiBibles(settings.apiBibleKey ?? "");
+      setKeyTestStatus("success");
+      setKeyTestMessage(`Key works — ${bibles.length} translation${bibles.length === 1 ? "" : "s"} available.`);
+    } catch (err) {
+      setKeyTestStatus("error");
+      setKeyTestMessage(err instanceof Error ? err.message : "Couldn't verify that key.");
+    }
+  }
 
   async function handleFileSelected(e: React.ChangeEvent<HTMLInputElement>) {
     setError(null);
@@ -152,6 +169,68 @@ export function SettingsPage() {
               <option value="dark">Dark</option>
             </select>
           </Field>
+        </div>
+      </section>
+
+      <section className="mt-8">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Scripture Lookup</h2>
+        <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+          Optional: add your own{" "}
+          <a
+            href="https://scripture.api.bible"
+            target="_blank"
+            rel="noreferrer"
+            className="underline"
+          >
+            api.bible
+          </a>{" "}
+          key to look up additional translations when adding Scripture. It's stored only in this
+          browser — never uploaded anywhere or bundled into the app.
+        </p>
+        <div className="mt-3 space-y-3 rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+          <Field label="api.bible Key">
+            <div className="flex gap-2">
+              <input
+                type={showApiKey ? "text" : "password"}
+                value={settings.apiBibleKey ?? ""}
+                onChange={(e) => {
+                  updateSettings({ apiBibleKey: e.target.value || undefined });
+                  setKeyTestStatus("idle");
+                  setKeyTestMessage(null);
+                }}
+                placeholder="Paste your api.bible key"
+                autoComplete="off"
+                spellCheck={false}
+                className="input flex-1"
+              />
+              <button
+                type="button"
+                onClick={() => setShowApiKey((v) => !v)}
+                className="rounded-lg bg-slate-100 px-3 text-sm font-medium text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
+              >
+                {showApiKey ? "Hide" : "Show"}
+              </button>
+            </div>
+          </Field>
+          <button
+            type="button"
+            onClick={handleTestApiBibleKey}
+            disabled={!settings.apiBibleKey?.trim() || keyTestStatus === "testing"}
+            className="w-full rounded-lg bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
+          >
+            {keyTestStatus === "testing" ? "Checking…" : "Test Key"}
+          </button>
+          {keyTestMessage && (
+            <p
+              className={`text-sm ${
+                keyTestStatus === "success"
+                  ? "text-emerald-700 dark:text-emerald-400"
+                  : "text-red-600 dark:text-red-400"
+              }`}
+            >
+              {keyTestMessage}
+            </p>
+          )}
         </div>
       </section>
 

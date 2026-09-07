@@ -1,6 +1,8 @@
 export interface UserSettings {
   id: "settings";
   preferredTranslation?: string;
+  /** User-supplied api.bible key, stored locally only — never bundled into the app or synced anywhere. */
+  apiBibleKey?: string;
   dailyNewScriptures: number;
   dailyReviewGoal: number;
   enableSpeechRecognition: boolean;
