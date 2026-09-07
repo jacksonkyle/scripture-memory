@@ -1,3 +1,4 @@
+export * from "./bibleProvider";
 export * from "./memorization";
 export * from "./scriptureCompare";
 export * from "./reviewScheduler";

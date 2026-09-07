@@ -37,6 +37,7 @@ state to a JSON file whenever you like, and restore it on any device.
 | Offline / install | PWA via `vite-plugin-pwa`      |
 | Backup format     | JSON                           |
 | Speech recitation | Browser Web Speech API (optional, where supported) |
+| Verse lookup      | [bible-api.com](https://bible-api.com) (KJV/WEB, public domain, optional) |
 
 No backend, no SQL database, no required account. All Scripture, progress,
 and review history stay on your device unless you export a backup yourself.
@@ -57,6 +58,20 @@ try it in airplane mode after the first visit.
 npm run build   # type-checks and builds to dist/
 npm run preview # serve the production build locally
 ```
+
+## Adding Scripture
+
+Type the text in yourself, or use **Look Up & Fill Text** on the Add Scripture
+form: enter a reference (e.g. `John 3:16` or `Romans 8:1-4`), pick KJV or WEB
+as the translation, and it fetches the verse text for you from
+[bible-api.com](https://bible-api.com) — a free, no-key API serving only
+public-domain translations. Automatic lookup is gated to KJV/WEB specifically
+because copyrighted translations (ESV, NIV, NASB, CSB, NKJV) can't legally be
+redistributed this way; for those, paste the text in manually as before.
+Lookup requires an internet connection; everything else in the app works
+fully offline. The lookup client (`src/services/bibleProvider.ts`) is written
+behind a small `BibleProvider` interface so a licensed provider can be added
+later without changing any callers.
 
 ## How memorization works
 

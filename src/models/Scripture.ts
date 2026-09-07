@@ -16,6 +16,7 @@ export interface Scripture {
 
 export const TRANSLATIONS = [
   "KJV",
+  "WEB",
   "NKJV",
   "ESV",
   "NIV",

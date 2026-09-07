@@ -5,6 +5,7 @@ import { useCollections, useScripture } from "../hooks/useLiveData";
 import { addScripture, updateScripture } from "../db/repositories/scriptureRepository";
 import { addCollection } from "../db/repositories/collectionRepository";
 import { parseReference } from "../utils/reference";
+import { bibleProvider, isLookupTranslation, LOOKUP_TRANSLATIONS } from "../services/bibleProvider";
 
 export function AddScripturePage() {
   const { id } = useParams<{ id: string }>();
@@ -14,7 +15,7 @@ export function AddScripturePage() {
   const navigate = useNavigate();
 
   const [reference, setReference] = useState("");
-  const [translation, setTranslation] = useState<string>("ESV");
+  const [translation, setTranslation] = useState<string>("KJV");
   const [text, setText] = useState("");
   const [meaning, setMeaning] = useState("");
   const [reason, setReason] = useState("");
@@ -22,6 +23,9 @@ export function AddScripturePage() {
   const [newCollectionName, setNewCollectionName] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [lookupLoading, setLookupLoading] = useState(false);
+  const [lookupError, setLookupError] = useState<string | null>(null);
+  const [lookupSuccess, setLookupSuccess] = useState(false);
 
   useEffect(() => {
     if (existing) {
@@ -67,6 +71,23 @@ export function AddScripturePage() {
     }
   }
 
+  async function handleLookup() {
+    if (!isLookupTranslation(translation)) return;
+    setLookupLoading(true);
+    setLookupError(null);
+    setLookupSuccess(false);
+    try {
+      const result = await bibleProvider.getPassage(translation, reference);
+      setReference(result.reference);
+      setText(result.text);
+      setLookupSuccess(true);
+    } catch (err) {
+      setLookupError(err instanceof Error ? err.message : "Lookup failed. Please try again.");
+    } finally {
+      setLookupLoading(false);
+    }
+  }
+
   async function handleAddCollection() {
     const name = newCollectionName.trim();
     if (!name) return;
@@ -94,7 +115,11 @@ export function AddScripturePage() {
           <input
             id="reference"
             value={reference}
-            onChange={(e) => setReference(e.target.value)}
+            onChange={(e) => {
+              setReference(e.target.value);
+              setLookupError(null);
+              setLookupSuccess(false);
+            }}
             placeholder="Romans 8:1"
             required
             className="input"
@@ -105,7 +130,11 @@ export function AddScripturePage() {
           <select
             id="translation"
             value={translation}
-            onChange={(e) => setTranslation(e.target.value)}
+            onChange={(e) => {
+              setTranslation(e.target.value);
+              setLookupError(null);
+              setLookupSuccess(false);
+            }}
             className="input"
           >
             {TRANSLATIONS.map((t) => (
@@ -116,11 +145,36 @@ export function AddScripturePage() {
           </select>
         </Field>
 
+        <div className="rounded-lg border border-dashed border-slate-300 p-3 dark:border-slate-700">
+          <button
+            type="button"
+            onClick={handleLookup}
+            disabled={!isLookupTranslation(translation) || !reference.trim() || lookupLoading}
+            className="w-full rounded-lg bg-slate-800 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white"
+          >
+            {lookupLoading ? "Looking up…" : "Look Up & Fill Text"}
+          </button>
+          <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+            {isLookupTranslation(translation)
+              ? `Pulls the verse text automatically for ${translation} from a public-domain Bible API. Requires an internet connection.`
+              : `Automatic lookup only works for public-domain translations (${LOOKUP_TRANSLATIONS.join(" or ")}) due to copyright. Switch translation above to use it, or type the text below.`}
+          </p>
+          {lookupError && <p className="mt-2 text-sm text-red-600 dark:text-red-400">{lookupError}</p>}
+          {lookupSuccess && (
+            <p className="mt-2 text-sm text-emerald-700 dark:text-emerald-400">
+              Verse text filled in below — review it, then save.
+            </p>
+          )}
+        </div>
+
         <Field label="Scripture Text" htmlFor="text">
           <textarea
             id="text"
             value={text}
-            onChange={(e) => setText(e.target.value)}
+            onChange={(e) => {
+              setText(e.target.value);
+              setLookupSuccess(false);
+            }}
             required
             rows={5}
             className="input resize-y"
