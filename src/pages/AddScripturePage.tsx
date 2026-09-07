@@ -1,7 +1,9 @@
-import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useLiveQuery } from "dexie-react-hooks";
 import { TRANSLATIONS } from "../models";
 import { useCollections, useScripture, useSettings } from "../hooks/useLiveData";
+import { db } from "../db/database";
 import { addScripture, updateScripture } from "../db/repositories/scriptureRepository";
 import { addCollection } from "../db/repositories/collectionRepository";
 import { parseReference } from "../utils/reference";
@@ -21,6 +23,7 @@ export function AddScripturePage() {
   const collections = useCollections();
   const settings = useSettings();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const [reference, setReference] = useState("");
   const [translation, setTranslation] = useState<string>("KJV");
@@ -44,6 +47,95 @@ export function AddScripturePage() {
   const [apiLookupCopyright, setApiLookupCopyright] = useState<string | null>(null);
 
   const apiBibleKey = settings.apiBibleKey?.trim();
+
+  const [prefilledFromLink, setPrefilledFromLink] = useState(false);
+  const [collectionParamStatus, setCollectionParamStatus] = useState<"pending" | "done">(
+    isEditing || !searchParams.get("collection") ? "done" : "pending",
+  );
+  const rawCollections = useLiveQuery(() => db.collections.toArray(), []);
+  const autosaveTriggered = useRef(false);
+  const collectionResolutionStarted = useRef(false);
+
+  // Pre-fill from URL query params (e.g. a link from an LLM recommending a
+  // verse): ?reference=John+3:16&text=...&translation=ESV&meaning=...
+  // &reason=...&collection=Faith,Salvation. Runs once, on mount, for new
+  // (not edit) scriptures only.
+  useEffect(() => {
+    if (isEditing) return;
+    const qReference = searchParams.get("reference");
+    const qText = searchParams.get("text");
+    const qTranslation = searchParams.get("translation");
+    const qMeaning = searchParams.get("meaning");
+    const qReason = searchParams.get("reason");
+    if (!qReference && !qText && !qTranslation && !qMeaning && !qReason) return;
+    if (qReference) setReference(qReference);
+    if (qText) setText(qText);
+    if (qTranslation) setTranslation(qTranslation);
+    if (qMeaning) setMeaning(qMeaning);
+    if (qReason) setReason(qReason);
+    setPrefilledFromLink(true);
+    // Intentionally runs once on mount only - this reads the initial URL, not live state.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Resolve ?collection=Name,Other into ids, creating any collection that
+  // doesn't already exist. Waits for the real collections list (rawCollections
+  // is undefined while Dexie's live query is still loading) to avoid creating
+  // a duplicate of a collection that already exists. Guarded by a ref (not
+  // just collectionParamStatus) because addCollection's writes make Dexie's
+  // live query re-fire mid-flight, which would otherwise re-enter this same
+  // effect - with collectionParamStatus still "pending" - and double-create.
+  useEffect(() => {
+    if (isEditing || collectionParamStatus !== "pending") return;
+    if (rawCollections === undefined) return;
+    if (collectionResolutionStarted.current) return;
+    collectionResolutionStarted.current = true;
+    const qCollection = searchParams.get("collection");
+    if (!qCollection) {
+      setCollectionParamStatus("done");
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      const names = qCollection.split(",").map((n) => n.trim()).filter(Boolean);
+      const ids: string[] = [];
+      for (const name of names) {
+        const match = rawCollections.find((c) => c.name.toLowerCase() === name.toLowerCase());
+        ids.push(match ? match.id : (await addCollection(name)).id);
+      }
+      if (cancelled) return;
+      setSelectedCollectionIds((prev) => Array.from(new Set([...prev, ...ids])));
+      setPrefilledFromLink(true);
+    })().finally(() => {
+      if (!cancelled) setCollectionParamStatus("done");
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [rawCollections, isEditing, searchParams, collectionParamStatus]);
+
+  // Optional zero-click add: ?autosave=1 saves immediately once prefill and
+  // collection resolution are done, then navigates to the new scripture.
+  useEffect(() => {
+    if (isEditing || autosaveTriggered.current || collectionParamStatus !== "done") return;
+    const wantsAutosave = ["1", "true", "yes"].includes(
+      (searchParams.get("autosave") ?? "").toLowerCase(),
+    );
+    if (!wantsAutosave) {
+      // Stable, URL-derived decision - safe to lock in immediately.
+      autosaveTriggered.current = true;
+      return;
+    }
+    // reference/text may not be populated yet on this same effect flush (the
+    // prefill effect's setState hasn't re-rendered yet) - wait for them
+    // without locking, so this re-checks once they land.
+    if (!reference.trim() || !text.trim()) return;
+    autosaveTriggered.current = true;
+    void saveScripture();
+    // saveScripture is stable enough for this one-shot effect; re-running on
+    // every keystroke would be wrong once the user starts editing manually.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [collectionParamStatus, reference, text, isEditing, searchParams]);
 
   useEffect(() => {
     if (!apiBibleKey) {
@@ -85,6 +177,10 @@ export function AddScripturePage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    await saveScripture();
+  }
+
+  async function saveScripture() {
     setError(null);
     if (!reference.trim() || !text.trim()) {
       setError("Reference and Scripture text are required.");
@@ -174,6 +270,12 @@ export function AddScripturePage() {
       <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
         {isEditing ? "Edit Scripture" : "Add Scripture"}
       </h1>
+
+      {prefilledFromLink && (
+        <p className="mt-3 rounded-lg bg-blue-50 px-3 py-2 text-sm text-blue-800 dark:bg-blue-950/40 dark:text-blue-300">
+          Filled in from a link — review it below, then save.
+        </p>
+      )}
 
       <form onSubmit={handleSubmit} className="mt-6 space-y-5">
         <Field label="Reference" htmlFor="reference">

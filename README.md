@@ -85,6 +85,46 @@ except directly to api.bible from your own device. Because this app has no
 backend, there is no way to keep a shared key secret from users of a public
 deployment — each person who wants this feature supplies their own key.
 
+### Adding a verse from a link (e.g. an AI recommendation)
+
+The Add Scripture page reads its fields from URL query parameters, so any
+external tool — an LLM chat, a bookmarklet, a script — can hand you a link
+that opens the form pre-filled, or saves it with no click at all. This is
+the answer to "recommend a scripture": ask any LLM (including Claude, right
+in a chat) to suggest a verse for a topic, and have it give you a link built
+this way.
+
+```
+https://jacksonkyle.github.io/scripture-memory/#/library/new
+  ?reference=John+3:16
+  &text=For+God+so+loved+the+world...
+  &translation=ESV
+  &meaning=God's+love+moved+Him+to+act+for+our+salvation.
+  &reason=To+remember+the+gospel+in+one+verse.
+  &collection=Salvation,Promises+of+God
+```
+
+All parameters are optional and independent:
+
+| Param         | Effect                                                                 |
+| ------------- | ----------------------------------------------------------------------- |
+| `reference`   | Fills the Reference field                                               |
+| `text`        | Fills the Scripture Text field                                          |
+| `translation` | Fills the Translation field (any value, not just the built-in list)     |
+| `meaning`     | Fills "What does this Scripture teach?"                                 |
+| `reason`      | Fills "Why do you want to remember this Scripture?"                     |
+| `collection`  | Comma-separated collection names; matched case-insensitively to existing collections, or created if new |
+| `autosave=1`  | Saves immediately (once `reference` and `text` are both present) and jumps straight to the new Scripture's page, instead of waiting for you to review and click Save |
+
+Without `autosave`, the form just opens pre-filled — you still review and
+click **Save Scripture** yourself, same as manual entry. With `autosave=1`,
+it saves with zero clicks, so only use that for links you trust (your own
+tools, or an AI response you've already read) — it's still just local data
+on your device either way, so the worst case is an unwanted entry you can
+delete, not anything more serious. All values are rendered as plain text (no
+HTML/script execution), so there's no injection risk from an untrusted link
+— only "content you didn't mean to add."
+
 ## How memorization works
 
 Each Scripture progresses through five stages the first time you learn it:
