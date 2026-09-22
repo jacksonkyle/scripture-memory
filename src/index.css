@@ -25,3 +25,238 @@ body {
 .input {
   @apply w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-base text-slate-900 focus:border-blue-500 focus:outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder-slate-500;
 }
+
+/* ---------------------------------------------------------------------------
+   Review animations. Everything here is decorative: the review flow works the
+   same with motion disabled (see the prefers-reduced-motion block at the end).
+   --------------------------------------------------------------------------- */
+
+@keyframes sm-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes sm-pop-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes sm-word-in {
+  from {
+    opacity: 0;
+    transform: translateY(9px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes sm-blank-pulse {
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes sm-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-7px);
+  }
+  40% {
+    transform: translateX(6px);
+  }
+  60% {
+    transform: translateX(-4px);
+  }
+  80% {
+    transform: translateX(2px);
+  }
+}
+
+@keyframes sm-confetti {
+  0% {
+    opacity: 1;
+    transform: translate3d(0, -12vh, 0) rotate(0deg);
+  }
+  100% {
+    opacity: 0.85;
+    transform: translate3d(var(--sm-drift, 0px), 108vh, 0) rotate(var(--sm-spin, 720deg));
+  }
+}
+
+@keyframes sm-float-up {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.85);
+  }
+  22% {
+    opacity: 1;
+    transform: translateY(-4px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-44px) scale(1);
+  }
+}
+
+@keyframes sm-bob {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-3deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(3deg);
+  }
+}
+
+@keyframes sm-flicker {
+  0%,
+  100% {
+    transform: scale(1) rotate(-2deg);
+  }
+  35% {
+    transform: scale(1.12) rotate(3deg);
+  }
+  70% {
+    transform: scale(0.96) rotate(-1deg);
+  }
+}
+
+@keyframes sm-shimmer {
+  0% {
+    background-position: -180% 0;
+  }
+  100% {
+    background-position: 180% 0;
+  }
+}
+
+@keyframes sm-ping-ring {
+  0% {
+    opacity: 0.7;
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.7);
+  }
+}
+
+.sm-card-in {
+  animation: sm-card-in 380ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.sm-pop-in {
+  animation: sm-pop-in 340ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Staggered reveal: each element sets --i to its index. */
+.sm-word-in {
+  animation: sm-word-in 300ms ease-out both;
+  animation-delay: calc(var(--i, 0) * 22ms);
+}
+
+.sm-stagger-pop {
+  animation: sm-pop-in 300ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(var(--i, 0) * 45ms);
+}
+
+.sm-blank {
+  animation: sm-blank-pulse 2.2s ease-in-out infinite;
+  animation-delay: calc(var(--i, 0) * 60ms);
+}
+
+.sm-shake {
+  animation: sm-shake 460ms ease-in-out both;
+}
+
+.sm-confetti-piece {
+  animation: sm-confetti var(--sm-duration, 2400ms) cubic-bezier(0.3, 0.6, 0.5, 1) both;
+  animation-delay: var(--sm-delay, 0ms);
+}
+
+.sm-float-up {
+  animation: sm-float-up 1400ms ease-out both;
+}
+
+.sm-bob {
+  animation: sm-bob 2.6s ease-in-out infinite;
+}
+
+.sm-flicker {
+  animation: sm-flicker 900ms ease-in-out;
+}
+
+.sm-shimmer {
+  background-image: linear-gradient(
+    100deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.55) 50%,
+    transparent 70%
+  );
+  background-size: 200% 100%;
+  animation: sm-shimmer 1.8s linear infinite;
+}
+
+.sm-ping-ring {
+  animation: sm-ping-ring 900ms ease-out infinite;
+}
+
+/* Press feedback for anything tappable in the review flow. */
+.sm-tap {
+  transition:
+    transform 120ms ease,
+    background-color 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.sm-tap:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sm-card-in,
+  .sm-pop-in,
+  .sm-word-in,
+  .sm-stagger-pop,
+  .sm-blank,
+  .sm-shake,
+  .sm-confetti-piece,
+  .sm-float-up,
+  .sm-bob,
+  .sm-flicker,
+  .sm-shimmer,
+  .sm-ping-ring {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .sm-tap:active:not(:disabled) {
+    transform: none;
+  }
+}

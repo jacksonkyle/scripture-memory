@@ -11,6 +11,14 @@ interface Token {
   trailing: string;
 }
 
+/** A verse word ready for rendering: the real word, what to show while it is concealed, and the gap after it. */
+export interface VerseToken {
+  word: string;
+  masked: string;
+  trailing: string;
+  concealed: boolean;
+}
+
 function tokenize(text: string): Token[] {
   const matches = text.match(/\S+\s*/g) ?? [];
   return matches.map((chunk) => {
@@ -37,15 +45,46 @@ function pickHiddenIndices(count: number, percentage: number): Set<number> {
   return new Set(indices.slice(0, hideCount));
 }
 
-export function hideWords(text: string, percentage: number): string {
+export function hideWordTokens(text: string, percentage: number): VerseToken[] {
   const tokens = tokenize(text);
   const hidden = pickHiddenIndices(tokens.length, percentage);
+  return tokens.map((token, i) => ({
+    word: token.word,
+    masked: maskWord(token.word),
+    trailing: token.trailing,
+    concealed: hidden.has(i),
+  }));
+}
+
+export function firstLetterTokens(text: string): VerseToken[] {
+  return tokenize(text).map((token) => ({
+    word: token.word,
+    masked: hintWord(token.word),
+    trailing: token.trailing,
+    concealed: true,
+  }));
+}
+
+export function readingTokens(text: string): VerseToken[] {
+  return tokenize(text).map((token) => ({
+    word: token.word,
+    masked: token.word,
+    trailing: token.trailing,
+    concealed: false,
+  }));
+}
+
+export function hideWords(text: string, percentage: number): string {
+  return renderTokens(hideWordTokens(text, percentage));
+}
+
+export function firstLetterHints(text: string): string {
+  return renderTokens(firstLetterTokens(text));
+}
+
+function renderTokens(tokens: VerseToken[]): string {
   return tokens
-    .map((token, i) => {
-      if (!hidden.has(i)) return token.word + token.trailing;
-      const blank = maskWord(token.word);
-      return blank + token.trailing;
-    })
+    .map((token) => (token.concealed ? token.masked : token.word) + token.trailing)
     .join("");
 }
 
@@ -55,14 +94,8 @@ function maskWord(word: string): string {
   return word.replace(/[A-Za-z]/g, "_");
 }
 
-export function firstLetterHints(text: string): string {
-  const tokens = tokenize(text);
-  return tokens
-    .map((token) => {
-      const hinted = token.word.replace(/^([A-Za-z])([A-Za-z]*)/, (_m, first, rest) => {
-        return first + rest.replace(/[A-Za-z]/g, "_");
-      });
-      return hinted + token.trailing;
-    })
-    .join("");
+function hintWord(word: string): string {
+  return word.replace(/^([A-Za-z])([A-Za-z]*)/, (_m, first, rest) => {
+    return first + rest.replace(/[A-Za-z]/g, "_");
+  });
 }

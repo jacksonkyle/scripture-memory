@@ -97,6 +97,17 @@ Each Scripture progresses through five stages the first time you learn it:
    (missing / incorrect / extra words) plus a suggested rating you can
    override.
 
+Along the way the review screen keeps the pace visible and the feedback
+immediate: a phase stepper for where you are inside a verse, a queue bar for
+where you are in the session, tappable blanks so you can peek at one word
+instead of bailing to the full text, a live word-match bar while you type, an
+animated score ring with the verse replayed in place and each slip marked
+where it happened, a streak counter for consecutive good recalls, and session
+XP (recall score, plus 25 for a no-peek verse, plus 5 per streak step). Press
+Enter to advance a phase and 1–4 to rate. XP and streaks are per session —
+nothing about them is stored. Every animation is dropped under
+`prefers-reduced-motion`.
+
 After that first pass, a Scripture enters spaced repetition: review
 intervals follow the ladder 1 → 3 → 7 → 14 → 30 → 60 → 120 → 240 → 365 days,
 adjusted up or down based on how you rate each review (Again / Hard / Good /

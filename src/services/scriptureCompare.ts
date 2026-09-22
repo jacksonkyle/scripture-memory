@@ -1,9 +1,22 @@
+export type WordStatus = "correct" | "missing" | "incorrect";
+
+/** One word of the expected verse, with what the user actually produced for it. */
+export interface WordResult {
+  expected: string;
+  actual?: string;
+  status: WordStatus;
+}
+
 export interface CompareResult {
   score: number;
   missingWords: string[];
   incorrectWords: string[];
   extraWords: string[];
   hasOrderIssue: boolean;
+  /** Expected verse, word by word, for rendering a diff. */
+  wordResults: WordResult[];
+  correctCount: number;
+  totalWords: number;
 }
 
 function normalizeWord(word: string): string {
@@ -56,8 +69,15 @@ export function compareRecall(expected: string, actual: string): CompareResult {
     }
   }
 
-  const missingWords = expectedWords.filter((_, idx) => !matchedExpectedIndices.has(idx));
+  const missingEntries = expectedWords
+    .map((word, idx) => ({ word, idx }))
+    .filter(({ idx }) => !matchedExpectedIndices.has(idx));
   const extraWords = actualWords.filter((_, idx) => !matchedActualIndices.has(idx));
+
+  const wordResults: WordResult[] = expectedWords.map((word, idx) => ({
+    expected: word,
+    status: matchedExpectedIndices.has(idx) ? "correct" : "missing",
+  }));
 
   // Words present on both sides but never aligned by the LCS are treated as
   // substitutions ("incorrect") rather than double-counted as missing+extra,
@@ -65,12 +85,14 @@ export function compareRecall(expected: string, actual: string): CompareResult {
   const incorrectWords: string[] = [];
   const remainingMissing: string[] = [];
   const remainingExtra = [...extraWords];
-  for (const word of missingWords) {
+  for (const { word, idx } of missingEntries) {
     const swapIndex = remainingExtra.findIndex(
       (candidate) => normalizeWord(candidate) !== normalizeWord(word),
     );
     if (swapIndex !== -1 && remainingExtra.length >= remainingMissing.length + 1) {
-      incorrectWords.push(`${word} → ${remainingExtra[swapIndex]}`);
+      const substitute = remainingExtra[swapIndex];
+      incorrectWords.push(`${word} → ${substitute}`);
+      wordResults[idx] = { expected: word, actual: substitute, status: "incorrect" };
       remainingExtra.splice(swapIndex, 1);
     } else {
       remainingMissing.push(word);
@@ -91,6 +113,9 @@ export function compareRecall(expected: string, actual: string): CompareResult {
     incorrectWords,
     extraWords: remainingExtra,
     hasOrderIssue,
+    wordResults,
+    correctCount: matchedCount,
+    totalWords: expectedWords.length,
   };
 }
 
