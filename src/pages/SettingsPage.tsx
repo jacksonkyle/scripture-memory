@@ -28,6 +28,15 @@ export function SettingsPage() {
   const settings = useSettings();
   const systemReducedMotion = useSystemReducedMotion();
   const voiceAvailability = speechAvailability();
+  const motionPreference = settings.motion ?? "system";
+  const motionStateLabel =
+    motionPreference === "off"
+      ? "Off (your choice)"
+      : motionPreference === "full"
+        ? "Playing (overriding device)"
+        : systemReducedMotion
+          ? "Off (device setting)"
+          : "Playing";
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [pendingBackup, setPendingBackup] = useState<Backup | null>(null);
   const [preview, setPreview] = useState<RestorePreview | null>(null);
@@ -168,7 +177,7 @@ export function SettingsPage() {
 
           <Field label="Animations">
             <select
-              value={settings.motion ?? "system"}
+              value={motionPreference}
               onChange={(e) =>
                 updateSettings({ motion: e.target.value as "system" | "full" | "off" })
               }
@@ -178,7 +187,7 @@ export function SettingsPage() {
               <option value="full">Always on</option>
               <option value="off">Always off</option>
             </select>
-            {systemReducedMotion && (settings.motion ?? "system") === "system" && (
+            {systemReducedMotion && motionPreference === "system" && (
               <p className="mt-1 text-xs text-amber-700 dark:text-amber-400">
                 This device is asking for reduced motion, so animations are off. Battery saver turns
                 this on automatically on some phones. Choose "Always on" to override it.
@@ -211,8 +220,16 @@ export function SettingsPage() {
                 label="Device asks for reduced motion"
                 value={systemReducedMotion ? "Yes" : "No"}
               />
+              <Row label="Animations right now" value={motionStateLabel} />
               <Row label="Running as" value={isStandaloneDisplay() ? "Installed app" : "Browser tab"} />
             </dl>
+            <div className="mt-3 flex items-center gap-2 border-t border-slate-200 pt-3 dark:border-slate-700">
+              <span className="sm-bob inline-block h-3 w-3 rounded-full bg-blue-600 dark:bg-blue-400" />
+              <span className="sm-blank inline-block h-3 w-3 rounded-full bg-emerald-600 dark:bg-emerald-400" />
+              <span className="text-slate-500 dark:text-slate-400">
+                These two dots bounce and pulse when animations are working.
+              </span>
+            </div>
           </div>
         </div>
       </section>

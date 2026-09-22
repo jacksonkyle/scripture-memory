@@ -3,6 +3,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { useAllProgress, useScriptures, useSettings } from "../hooks/useLiveData";
 import { ReviewItem } from "../components/ReviewItem";
 import { Confetti } from "../components/Confetti";
+import { MotionNudge } from "../components/MotionNudge";
 import { CountUp } from "../components/CountUp";
 import { applyReview } from "../services/reviewScheduler";
 import type { ReviewMethod, ReviewRating } from "../models";
@@ -130,6 +131,8 @@ export function ReviewPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 pb-24 pt-6 sm:pb-8">
+      <MotionNudge />
+
       <div className="mb-3 flex items-center justify-between gap-3 text-sm text-slate-500 dark:text-slate-400">
         <span className="tabular-nums">
           {position + 1} of {queue.length}
