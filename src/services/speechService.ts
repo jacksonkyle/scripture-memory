@@ -49,7 +49,9 @@ export function speechAvailability(): SpeechAvailability {
 
 export function speechUnavailableMessage(availability: SpeechAvailability): string {
   if (availability === "unavailable-standalone") {
-    return "Voice input is not available in the installed app. Open the site in your browser to recite aloud.";
+    // iOS withholds SpeechRecognition from home-screen web apps, but the system
+    // keyboard's dictation key still works in the textarea, which is the same job.
+    return "In-app voice input is not available in the installed app. Use your keyboard's dictation key to speak the verse, or open the site in your browser.";
   }
   return "This browser has no speech recognition. Chrome, Edge, or Safari support it.";
 }
