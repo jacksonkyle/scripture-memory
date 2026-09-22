@@ -8,6 +8,8 @@ export interface UserSettings {
   enableSpeechRecognition: boolean;
   enableNotifications: boolean;
   theme: "light" | "dark" | "system";
+  /** Animation preference. Optional so existing stored settings keep working; absent means "system". */
+  motion?: "system" | "full" | "off";
   reviewAlgorithmVersion: number;
 }
 
@@ -18,5 +20,6 @@ export const DEFAULT_SETTINGS: UserSettings = {
   enableSpeechRecognition: false,
   enableNotifications: false,
   theme: "system",
+  motion: "system",
   reviewAlgorithmVersion: 1,
 };

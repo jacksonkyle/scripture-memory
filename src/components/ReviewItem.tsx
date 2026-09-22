@@ -9,7 +9,11 @@ import {
 } from "../services/memorization";
 import { compareRecall, scoreCategory, type CompareResult } from "../services/scriptureCompare";
 import { ratingFromScore } from "../services/reviewScheduler";
-import { isSpeechRecognitionSupported, listenForRecitation } from "../services/speechService";
+import {
+  listenForRecitation,
+  speechAvailability,
+  speechUnavailableMessage,
+} from "../services/speechService";
 import { BUZZ_CORRECT, BUZZ_MISS, BUZZ_TAP, buzz } from "../utils/haptics";
 import { useReducedMotion } from "../hooks/useReducedMotion";
 import { Confetti } from "./Confetti";
@@ -137,6 +141,7 @@ export function ReviewItem({
 
   const phase = phases[phaseIndex];
   const meta = PHASE_META[phase];
+  const voiceAvailability = speechAvailability();
 
   const verseTokens = useMemo(() => {
     if (phase === "read") return readingTokens(scripture.text);
@@ -305,7 +310,7 @@ export function ReviewItem({
             <ActionButton onClick={handleCheckAnswer} disabled={!typedAnswer.trim()}>
               {meta.cta}
             </ActionButton>
-            {speechEnabled && isSpeechRecognitionSupported() && (
+            {speechEnabled && voiceAvailability === "available" && (
               <button
                 type="button"
                 onClick={handleRecite}
@@ -319,6 +324,12 @@ export function ReviewItem({
               </button>
             )}
           </div>
+
+          {speechEnabled && voiceAvailability !== "available" && (
+            <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+              🎤 {speechUnavailableMessage(voiceAvailability)}
+            </p>
+          )}
         </>
       )}
 

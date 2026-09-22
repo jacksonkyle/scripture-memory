@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import { useSettings } from "../hooks/useLiveData";
+import { useSystemReducedMotion } from "../hooks/useReducedMotion";
 import { updateSettings } from "../db/repositories/settingsRepository";
 import {
   BackupValidationError,
@@ -15,11 +16,18 @@ import {
 import type { Backup, RestorePreview } from "../models";
 import { TRANSLATIONS } from "../models";
 import { formatFullDate } from "../utils/date";
-import { isSpeechRecognitionSupported } from "../services/speechService";
+import {
+  isSpeechRecognitionSupported,
+  isStandaloneDisplay,
+  speechAvailability,
+  speechUnavailableMessage,
+} from "../services/speechService";
 import { listApiBibles } from "../services/bibleProvider";
 
 export function SettingsPage() {
   const settings = useSettings();
+  const systemReducedMotion = useSystemReducedMotion();
+  const voiceAvailability = speechAvailability();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [pendingBackup, setPendingBackup] = useState<Backup | null>(null);
   const [preview, setPreview] = useState<RestorePreview | null>(null);
@@ -140,21 +148,43 @@ export function SettingsPage() {
             />
           </Field>
 
-          <label className="flex items-center justify-between text-sm text-slate-700 dark:text-slate-300">
-            <span>
-              Speech Recognition
-              {!isSpeechRecognitionSupported() && (
-                <span className="ml-1 text-xs text-slate-400 dark:text-slate-500">(not supported here)</span>
-              )}
-            </span>
-            <input
-              type="checkbox"
-              checked={settings.enableSpeechRecognition}
-              disabled={!isSpeechRecognitionSupported()}
-              onChange={(e) => updateSettings({ enableSpeechRecognition: e.target.checked })}
-              className="h-5 w-5"
-            />
-          </label>
+          <div>
+            <label className="flex items-center justify-between text-sm text-slate-700 dark:text-slate-300">
+              <span>Speech Recognition</span>
+              <input
+                type="checkbox"
+                checked={settings.enableSpeechRecognition}
+                disabled={!isSpeechRecognitionSupported()}
+                onChange={(e) => updateSettings({ enableSpeechRecognition: e.target.checked })}
+                className="h-5 w-5"
+              />
+            </label>
+            {voiceAvailability !== "available" && (
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                {speechUnavailableMessage(voiceAvailability)}
+              </p>
+            )}
+          </div>
+
+          <Field label="Animations">
+            <select
+              value={settings.motion ?? "system"}
+              onChange={(e) =>
+                updateSettings({ motion: e.target.value as "system" | "full" | "off" })
+              }
+              className="input"
+            >
+              <option value="system">Follow device setting</option>
+              <option value="full">Always on</option>
+              <option value="off">Always off</option>
+            </select>
+            {systemReducedMotion && (settings.motion ?? "system") === "system" && (
+              <p className="mt-1 text-xs text-amber-700 dark:text-amber-400">
+                This device is asking for reduced motion, so animations are off. Battery saver turns
+                this on automatically on some phones. Choose "Always on" to override it.
+              </p>
+            )}
+          </Field>
 
           <Field label="Theme">
             <select
@@ -169,6 +199,21 @@ export function SettingsPage() {
               <option value="dark">Dark</option>
             </select>
           </Field>
+
+          <div className="rounded-lg bg-slate-50 p-3 text-xs dark:bg-slate-800/50">
+            <p className="font-semibold text-slate-600 dark:text-slate-300">What this device supports</p>
+            <dl className="mt-2 space-y-1 text-slate-500 dark:text-slate-400">
+              <Row
+                label="Voice input"
+                value={voiceAvailability === "available" ? "Available" : "Not available"}
+              />
+              <Row
+                label="Device asks for reduced motion"
+                value={systemReducedMotion ? "Yes" : "No"}
+              />
+              <Row label="Running as" value={isStandaloneDisplay() ? "Installed app" : "Browser tab"} />
+            </dl>
+          </div>
         </div>
       </section>
 

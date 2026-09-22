@@ -238,25 +238,54 @@ body {
   transform: scale(0.96);
 }
 
+/* Motion is off by default when the OS asks for reduced motion. Some devices
+   turn that on without the user meaning it (Android battery saver, iOS Reduce
+   Motion), so Settings can force it back on with data-motion="full", or off
+   everywhere with data-motion="off". */
 @media (prefers-reduced-motion: reduce) {
-  .sm-card-in,
-  .sm-pop-in,
-  .sm-word-in,
-  .sm-stagger-pop,
-  .sm-blank,
-  .sm-shake,
-  .sm-confetti-piece,
-  .sm-float-up,
-  .sm-bob,
-  .sm-flicker,
-  .sm-shimmer,
-  .sm-ping-ring {
+  :root:not([data-motion="full"]) :is(
+      .sm-card-in,
+      .sm-pop-in,
+      .sm-word-in,
+      .sm-stagger-pop,
+      .sm-blank,
+      .sm-shake,
+      .sm-confetti-piece,
+      .sm-float-up,
+      .sm-bob,
+      .sm-flicker,
+      .sm-shimmer,
+      .sm-ping-ring
+    ) {
     animation: none !important;
     opacity: 1 !important;
     transform: none !important;
   }
 
-  .sm-tap:active:not(:disabled) {
+  :root:not([data-motion="full"]) .sm-tap:active:not(:disabled) {
     transform: none;
   }
+}
+
+:root[data-motion="off"] :is(
+    .sm-card-in,
+    .sm-pop-in,
+    .sm-word-in,
+    .sm-stagger-pop,
+    .sm-blank,
+    .sm-shake,
+    .sm-confetti-piece,
+    .sm-float-up,
+    .sm-bob,
+    .sm-flicker,
+    .sm-shimmer,
+    .sm-ping-ring
+  ) {
+  animation: none !important;
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+:root[data-motion="off"] .sm-tap:active:not(:disabled) {
+  transform: none;
 }

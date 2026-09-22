@@ -1,6 +1,7 @@
 import { HashRouter, Route, Routes } from "react-router-dom";
 import { Navigation } from "./components/Navigation";
 import { useThemeEffect } from "./hooks/useThemeEffect";
+import { useMotionEffect } from "./hooks/useReducedMotion";
 import {
   TodayPage,
   LibraryPage,
@@ -15,6 +16,7 @@ import {
 
 export function App() {
   useThemeEffect();
+  useMotionEffect();
   return (
     <HashRouter>
       <div className="min-h-screen bg-slate-50 pb-16 sm:pb-0 dark:bg-slate-950">
