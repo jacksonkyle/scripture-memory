@@ -1,7 +1,12 @@
-import { Link } from "react-router-dom";
-import { useAllProgress, useAllReviews, useScriptures } from "../hooks/useLiveData";
-import { computeStreak, reviewsToday, statusCounts } from "../services/stats";
-import { formatRelativeDate } from "../utils/date";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useLiveQuery } from "dexie-react-hooks";
+import { db } from "../db/database";
+import { useAllProgress, useAllReviews, useScriptures, useSettings } from "../hooks/useLiveData";
+import { addScripture } from "../db/repositories/scriptureRepository";
+import { computeStreak, reviewsToday } from "../services/stats";
+import { verseForDate } from "../data/dailyVerses";
+import { parseReference } from "../utils/reference";
 
 function greeting(): string {
   const hour = new Date().getHours();
@@ -11,25 +16,26 @@ function greeting(): string {
 }
 
 export function TodayPage() {
+  // Undefined until the database answers, so returning users don't see the first-run screen flash.
+  const scriptureCount = useLiveQuery(() => db.scriptures.count());
   const scriptures = useScriptures();
   const progress = useAllProgress();
   const reviews = useAllReviews();
+  const settings = useSettings();
+  const navigate = useNavigate();
+  const [adding, setAdding] = useState(false);
 
-  const counts = statusCounts(progress);
-  const dueToday = progress.filter(
+  const verse = verseForDate();
+  const verseInLibrary = scriptures.some((s) => s.reference === verse.reference);
+
+  // Mirrors ReviewPage's queue: everything due, with new verses capped at the daily limit.
+  const due = progress.filter(
     (p) => p.status !== "paused" && new Date(p.nextReviewDate) <= new Date(),
-  ).length;
+  );
+  const dueNew = due.filter((p) => p.status === "new").length;
+  const dueToday = due.length - dueNew + Math.min(dueNew, settings.dailyNewScriptures);
   const streak = computeStreak(reviews);
   const doneToday = reviewsToday(reviews);
-
-  const dueTomorrow = progress.filter((p) => {
-    if (p.status === "paused") return false;
-    const diffDays = Math.round(
-      (new Date(p.nextReviewDate).setHours(0, 0, 0, 0) - new Date().setHours(0, 0, 0, 0)) /
-        (24 * 60 * 60 * 1000),
-    );
-    return diffDays === 1;
-  }).length;
 
   const recentlyMastered = progress
     .filter((p) => p.status === "mastered")
@@ -38,92 +44,117 @@ export function TodayPage() {
     .map((p) => scriptures.find((s) => s.id === p.scriptureId))
     .filter((s): s is NonNullable<typeof s> => Boolean(s));
 
-  const hasWork = dueToday > 0 || counts.new > 0;
+  async function memorizeVerse() {
+    setAdding(true);
+    try {
+      const created = await addScripture({
+        reference: verse.reference,
+        ...parseReference(verse.reference),
+        text: verse.text,
+        translation: "KJV",
+        collectionIds: [],
+      });
+      navigate(`/review?scriptureId=${created.id}`);
+    } finally {
+      setAdding(false);
+    }
+  }
+
+  const summary = [
+    streak > 0 && `🔥 ${streak}-day streak`,
+    doneToday > 0 && `${doneToday} reviewed today`,
+  ].filter(Boolean);
 
   return (
     <div className="mx-auto max-w-2xl px-4 pb-24 pt-6 sm:pb-8">
       <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">{greeting()}</h1>
-      <p className="mt-1 text-slate-600 dark:text-slate-400">Today's Scripture Review</p>
+      <p className="mt-1 text-slate-600 dark:text-slate-400">Take a few minutes in the Word today.</p>
 
-      <dl className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <StatTile label="Due Today" value={dueToday} accent="text-blue-700 dark:text-blue-400" />
-        <StatTile label="Learning" value={counts.learning} accent="text-amber-700 dark:text-amber-400" />
-        <StatTile label="New" value={counts.new} accent="text-slate-700 dark:text-slate-300" />
-        <StatTile label="Mastered" value={counts.mastered} accent="text-emerald-700 dark:text-emerald-400" />
-      </dl>
-
-      <Link
-        to="/review"
-        className={`mt-6 block rounded-xl px-6 py-4 text-center text-lg font-semibold text-white shadow-sm transition-colors ${
-          hasWork ? "bg-blue-700 hover:bg-blue-800 dark:bg-blue-600 dark:hover:bg-blue-500" : "bg-slate-300 dark:bg-slate-700"
-        }`}
-        aria-disabled={!hasWork}
-        onClick={(e) => {
-          if (!hasWork) e.preventDefault();
-        }}
-      >
-        {hasWork ? "Start Today's Review" : "Nothing Due — Great Job!"}
-      </Link>
-
-      <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <InfoCard label="Current Streak" value={`${streak} ${streak === 1 ? "day" : "days"}`} />
-        <InfoCard label="Reviewed Today" value={String(doneToday)} />
-        <InfoCard label="Due Tomorrow" value={String(dueTomorrow)} />
-      </div>
-
-      {recentlyMastered.length > 0 && (
-        <section className="mt-8">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-            Recently Mastered
-          </h2>
-          <ul className="mt-2 space-y-2">
-            {recentlyMastered.map((s) => (
-              <li
-                key={s.id}
-                className="rounded-lg border border-emerald-100 bg-emerald-50 px-4 py-2 text-sm text-emerald-900 dark:border-emerald-900/40 dark:bg-emerald-950/30 dark:text-emerald-300"
-              >
-                {s.reference}
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-
-      {scriptures.length === 0 && (
-        <div className="mt-10 rounded-xl border border-dashed border-slate-300 p-6 text-center dark:border-slate-700">
-          <p className="text-slate-600 dark:text-slate-400">
-            You haven't added any Scripture yet. Start building your library.
-          </p>
-          <Link
-            to="/library/new"
-            className="mt-3 inline-block rounded-lg bg-blue-700 px-4 py-2 text-white hover:bg-blue-800 dark:bg-blue-600 dark:hover:bg-blue-500"
+      <figure className="mt-6 rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <p className="text-xs font-semibold uppercase tracking-wide text-blue-700 dark:text-blue-400">
+          Today's Word
+        </p>
+        <blockquote className="mt-2 font-serif text-lg leading-relaxed text-slate-800 dark:text-slate-200">
+          “{verse.text}”
+        </blockquote>
+        <figcaption className="mt-2 text-sm font-medium text-slate-500 dark:text-slate-400">
+          {verse.reference} · KJV
+        </figcaption>
+        <p className="mt-4 text-sm text-slate-600 dark:text-slate-400">{verse.encouragement}</p>
+        {scriptureCount !== undefined && !verseInLibrary && (
+          <button
+            type="button"
+            onClick={memorizeVerse}
+            disabled={adding}
+            className={`mt-4 rounded-lg px-4 py-2 text-sm font-semibold transition-colors disabled:opacity-60 ${
+              scriptureCount === 0
+                ? "w-full bg-blue-700 py-3 text-base text-white hover:bg-blue-800 dark:bg-blue-600 dark:hover:bg-blue-500"
+                : "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
+            }`}
           >
-            Add Your First Scripture
+            {adding ? "Adding…" : "Memorize this verse"}
+          </button>
+        )}
+      </figure>
+
+      {scriptureCount === 0 && (
+        <p className="mt-4 text-center text-sm text-slate-600 dark:text-slate-400">
+          Or{" "}
+          <Link to="/library/new" className="font-medium text-blue-700 underline dark:text-blue-400">
+            add a verse of your own
           </Link>
-        </div>
+          .
+        </p>
       )}
 
-      <p className="mt-2 text-xs text-slate-400 dark:text-slate-500">
-        {dueToday > 0 && `Next review window: ${formatRelativeDate(new Date().toISOString())}`}
-      </p>
-    </div>
-  );
-}
+      {scriptureCount !== undefined && scriptureCount > 0 && (
+        <>
+          {dueToday > 0 ? (
+            <Link
+              to="/review"
+              className="mt-6 block rounded-xl bg-blue-700 px-6 py-4 text-center text-lg font-semibold text-white shadow-sm transition-colors hover:bg-blue-800 dark:bg-blue-600 dark:hover:bg-blue-500"
+            >
+              Start Today's Review
+              <span className="block text-sm font-normal text-blue-100">
+                {dueToday} {dueToday === 1 ? "verse" : "verses"} waiting
+              </span>
+            </Link>
+          ) : (
+            <div className="mt-6 rounded-xl bg-emerald-50 px-6 py-4 text-center dark:bg-emerald-950/30">
+              <p className="font-semibold text-emerald-800 dark:text-emerald-300">You're all caught up for today.</p>
+              <p className="mt-1 text-sm text-emerald-700 dark:text-emerald-400">
+                Come back tomorrow, or{" "}
+                <Link to="/library/new" className="underline">
+                  add a new verse
+                </Link>
+                .
+              </p>
+            </div>
+          )}
 
-function StatTile({ label, value, accent }: { label: string; value: number; accent: string }) {
-  return (
-    <div className="rounded-xl border border-slate-200 bg-white p-4 text-center shadow-sm dark:border-slate-800 dark:bg-slate-900">
-      <dt className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">{label}</dt>
-      <dd className={`mt-1 text-2xl font-bold ${accent}`}>{value}</dd>
-    </div>
-  );
-}
+          {summary.length > 0 && (
+            <p className="mt-3 text-center text-sm text-slate-500 dark:text-slate-400">{summary.join(" · ")}</p>
+          )}
 
-function InfoCard({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-xl bg-slate-50 p-4 text-center dark:bg-slate-900">
-      <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">{label}</p>
-      <p className="mt-1 text-lg font-semibold text-slate-800 dark:text-slate-200">{value}</p>
+          {recentlyMastered.length > 0 && (
+            <section className="mt-8">
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                Recently Mastered
+              </h2>
+              <ul className="mt-2 space-y-2">
+                {recentlyMastered.map((s) => (
+                  <li
+                    key={s.id}
+                    className="rounded-lg border border-emerald-100 bg-emerald-50 px-4 py-2 text-sm text-emerald-900 dark:border-emerald-900/40 dark:bg-emerald-950/30 dark:text-emerald-300"
+                  >
+                    {s.reference}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+        </>
+      )}
     </div>
   );
 }
