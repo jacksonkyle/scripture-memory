@@ -85,6 +85,17 @@ except directly to api.bible from your own device. Because this app has no
 backend, there is no way to keep a shared key secret from users of a public
 deployment — each person who wants this feature supplies their own key.
 
+## Daily verse
+
+The Today page opens with a verse about staying in the Word, read from
+[`public/daily-verses.json`](public/daily-verses.json). Each entry has a
+`reference`, the KJV `text`, and a one-line `encouragement`. The app shows one
+entry per calendar day and steps through the list in order, starting over at
+the end, so the list can be any length. To change the rotation, edit the file
+and deploy; no code changes are needed. The service worker precaches the file,
+so the verse also appears offline. A new user can tap **Memorize this verse**
+to add it to their library and start learning it right away.
+
 ## How memorization works
 
 Each Scripture progresses through five stages the first time you learn it:
