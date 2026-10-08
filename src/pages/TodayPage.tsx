@@ -64,7 +64,7 @@ export function TodayPage() {
         reference: verse.reference,
         ...parseReference(verse.reference),
         text: verse.text,
-        translation: "KJV",
+        translation: verse.translation,
         collectionIds: [],
       });
       navigate(`/review?scriptureId=${created.id}`);
@@ -106,7 +106,7 @@ export function TodayPage() {
                   “{verse.text}”
                 </blockquote>
                 <figcaption className="mt-4 text-sm font-semibold uppercase tracking-widest text-amber-300">
-                  {verse.reference} <span className="font-normal text-blue-200/80">· KJV</span>
+                  {verse.reference} <span className="font-normal text-blue-200/80">· {verse.translation}</span>
                 </figcaption>
                 <p className="mt-6 text-blue-100">{verse.encouragement}</p>
               </figure>

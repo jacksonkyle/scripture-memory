@@ -89,10 +89,15 @@ deployment — each person who wants this feature supplies their own key.
 
 The Today page opens with a verse about staying in the Word, read from
 [`public/daily-verses.json`](public/daily-verses.json). Each entry has a
-`reference`, the KJV `text`, and a one-line `encouragement`. The app shows one
-entry per calendar day and steps through the list in order, starting over at
-the end, so the list can be any length. To change the rotation, edit the file
-and deploy; no code changes are needed. The service worker precaches the file,
+`reference`, the `text` in the World English Bible (US edition, public
+domain; the file's `translation` field names it), and a one-line
+`encouragement`. The app shows one entry per calendar day, in a random order:
+every verse appears once before any repeats, and each new pass through the
+list is reshuffled. The order is worked out from the date alone, so it needs
+no stored state and is the same on every device. The list can be any length.
+To change the verses, edit the file and deploy; no code changes are needed.
+`node scripts/verify-daily-verses.mjs` checks the texts against bible-api.com.
+The service worker precaches the file,
 so the verse also appears offline. A new user can tap **Memorize this verse**
 to add it to their library and start learning it right away.
 
